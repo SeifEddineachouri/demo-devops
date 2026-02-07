@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.9.6-eclipse-temurin-17'
+            args '-v $HOME/.m2:/root/.m2'
+        }
+    }
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
@@ -19,14 +24,14 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the application...'
-                bat 'mvnw.cmd clean compile'
+                sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Running tests...'
-                bat 'mvnw.cmd test'
+                sh 'mvn test'
             }
             post {
                 always {
@@ -39,31 +44,30 @@ pipeline {
         stage('Package') {
             steps {
                 echo 'Packaging the application...'
-                bat 'mvnw.cmd package -DskipTests'
+                sh 'mvn package -DskipTests'
             }
         }
 
         stage('SonarCloud Analysis') {
             steps {
                 echo 'Running SonarCloud analysis...'
-                script {
-                    bat """
-                        mvnw.cmd verify sonar:sonar ^
-                        -Dsonar.projectKey=%SONAR_PROJECT_KEY% ^
-                        -Dsonar.organization=%SONAR_ORGANIZATION% ^
-                        -Dsonar.host.url=%SONAR_HOST_URL% ^
-                        -Dsonar.token=%SONAR_TOKEN%
-                    """
-                }
+                sh """
+                    mvn verify sonar:sonar \
+                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                    -Dsonar.organization=${SONAR_ORGANIZATION} \
+                    -Dsonar.host.url=${SONAR_HOST_URL} \
+                    -Dsonar.token=${SONAR_TOKEN}
+                """
             }
         }
 
         stage('Build Docker Image') {
+            agent any
             steps {
                 echo 'Building Docker image...'
                 script {
-                    bat "docker build -t demo-devops:${BUILD_NUMBER} ."
-                    bat "docker tag demo-devops:${BUILD_NUMBER} demo-devops:latest"
+                    sh "docker build -t demo-devops:${BUILD_NUMBER} ."
+                    sh "docker tag demo-devops:${BUILD_NUMBER} demo-devops:latest"
                 }
             }
         }
@@ -71,7 +75,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying application...'
-                bat 'echo "Application ready for deployment"'
+                sh 'echo "Application ready for deployment"'
             }
         }
     }
@@ -83,21 +87,9 @@ pipeline {
         }
         success {
             echo 'Pipeline succeeded!'
-            emailext (
-                subject: "SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """<p>SUCCESS: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-                    <p>Check console output at <a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']]
-            )
         }
         failure {
             echo 'Pipeline failed!'
-            emailext (
-                subject: "FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'",
-                body: """<p>FAILURE: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-                    <p>Check console output at <a href='${env.BUILD_URL}'>${env.JOB_NAME} [${env.BUILD_NUMBER}]</a></p>""",
-                recipientProviders: [[$class: 'DevelopersRecipientProvider']]
-            )
         }
     }
 }
