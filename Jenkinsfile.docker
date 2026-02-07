@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven'
-        jdk 'JDK'
-    }
 
     environment {
         SONAR_TOKEN = credentials('sonar-token')
@@ -24,6 +20,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the application...'
+                sh 'chmod +x ./mvnw'
                 sh './mvnw clean compile'
             }
         }
