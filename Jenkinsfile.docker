@@ -1,97 +1,42 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven-3.9'
+    }
 
     environment {
-        SONAR_TOKEN = '72ec22fb9f554cefc0287b4f0e067f7e699ed642'
-        SONAR_HOST_URL = 'https://sonarcloud.io'
-        SONAR_ORGANIZATION = 'seifeddineachouri'
-        SONAR_PROJECT_KEY = 'seifeddineachouri_demo-devops'
+        APP_NAME = 'mon-app-springboot'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Cloning repository...'
-                checkout scm
+       checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building the application...'
-                sh 'chmod +x ./mvnw'
-                sh './mvnw clean compile'
+                sh 'mvn clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
-                sh './mvnw test'
-            }
-            post {
-                always {
-                    junit allowEmptyResults: true, testResults: '**/target/surefire-reports/*.xml'
-                    jacoco execPattern: '**/target/jacoco.exec'
-                }
+                sh 'mvn test'
             }
         }
 
         stage('Package') {
             steps {
-                echo 'Packaging the application...'
-                sh './mvnw package -DskipTests'
-            }
-        }
-
-        stage('SonarCloud Analysis') {
-            steps {
-                echo 'Running SonarCloud analysis...'
-                sh """
-                    ./mvnw verify sonar:sonar \
-                    -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                    -Dsonar.organization=${SONAR_ORGANIZATION} \
-                    -Dsonar.host.url=${SONAR_HOST_URL} \
-                    -Dsonar.token=${SONAR_TOKEN}
-                """
-            }
-        }
-
-        stage('Build Docker Image') {
-            when {
-                expression {
-                    return sh(script: 'command -v docker', returnStatus: true) == 0
-                }
-            }
-            steps {
-                echo 'Building Docker image...'
-                script {
-                    sh "docker build -t demo-devops:${BUILD_NUMBER} ."
-                    sh "docker tag demo-devops:${BUILD_NUMBER} demo-devops:latest"
-                }
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying application...'
-                sh 'echo "Application ready for deployment"'
+                sh 'mvn package -DskipTests'
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline completed'
-        }
-        success {
-            echo 'Pipeline succeeded!'
-            echo 'Archiving artifacts...'
-            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
-        }
-        failure {
-            echo 'Pipeline failed!'
-        }
+        success { echo 'Build SUCCESS!' }
+        failure { echo 'Build FAILED!' }
     }
 }
