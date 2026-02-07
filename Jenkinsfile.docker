@@ -3,7 +3,7 @@ pipeline {
 
 
     environment {
-        SONAR_TOKEN = credentials('sonar-token')
+        SONAR_TOKEN = '72ec22fb9f554cefc0287b4f0e067f7e699ed642'
         SONAR_HOST_URL = 'https://sonarcloud.io'
         SONAR_ORGANIZATION = 'seifeddineachouri'
         SONAR_PROJECT_KEY = 'seifeddineachouri_demo-devops'
