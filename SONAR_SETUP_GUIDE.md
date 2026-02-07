@@ -5,8 +5,8 @@
 ```xml
 <sonar.organization>seifeddineachouri</sonar.organization>
 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-<sonar.projectKey>SeifEddineachouri_devops-lab</sonar.projectKey>
-<sonar.projectName>SeifEddineachouri_devops-lab</sonar.projectName>
+<sonar.projectKey>seifeddineachouri_demo-devops</sonar.projectKey>
+<sonar.projectName>demo-devops</sonar.projectName>
 ```
 
 **✅ Cette configuration est CORRECTE !**
@@ -15,7 +15,7 @@
 
 ## ❌ Le Problème
 
-L'erreur "Project not found" signifie que le projet **`SeifEddineachouri_devops-lab`** n'existe pas encore sur SonarCloud.
+L'erreur "Project not found" signifie que le projet **`seifeddineachouri_demo-devops`** n'existe pas encore sur SonarCloud.
 
 ---
 
@@ -37,8 +37,8 @@ L'erreur "Project not found" signifie que le projet **`SeifEddineachouri_devops-
 ### Étape 5 : Remplir les Informations
 ```
 Organization:  seifeddineachouri
-Project Key:   SeifEddineachouri_devops-lab
-Display Name:  devops-lab
+Project Key:   seifeddineachouri_demo-devops
+Display Name:  demo-devops
 ```
 
 ### Étape 6 : Finaliser
@@ -79,7 +79,7 @@ $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
 Après avoir créé le projet, vérifiez sur :
 🌐 **https://sonarcloud.io/organizations/seifeddineachouri/projects**
 
-Vous devriez voir votre projet **`SeifEddineachouri_devops-lab`** dans la liste.
+Vous devriez voir votre projet **`seifeddineachouri_demo-devops`** dans la liste.
 
 ---
 

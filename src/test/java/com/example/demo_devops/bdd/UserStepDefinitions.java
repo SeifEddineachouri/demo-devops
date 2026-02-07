@@ -9,16 +9,17 @@ import io.cucumber.java.fr.Alors;
 import io.cucumber.java.fr.Etantdonné;
 import io.cucumber.java.fr.Quand;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 
-@Component
 public class UserStepDefinitions {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    public UserStepDefinitions(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     private List<User> userList;
 
