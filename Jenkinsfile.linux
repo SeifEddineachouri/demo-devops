@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven'
-        jdk 'JDK'
-    }
-
     environment {
         SONAR_TOKEN = credentials('sonar-token')
         SONAR_HOST_URL = 'https://sonarcloud.io'
@@ -16,21 +11,22 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Cloning repository...'
+                echo '🔄 Cloning repository...'
                 checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                echo 'Building the application...'
+                echo '🔨 Building the application...'
+                sh 'chmod +x ./mvnw'
                 sh './mvnw clean compile'
             }
         }
 
         stage('Test') {
             steps {
-                echo 'Running tests...'
+                echo '🧪 Running tests...'
                 sh './mvnw test'
             }
             post {
@@ -43,14 +39,14 @@ pipeline {
 
         stage('Package') {
             steps {
-                echo 'Packaging the application...'
+                echo '📦 Packaging the application...'
                 sh './mvnw package -DskipTests'
             }
         }
 
         stage('SonarCloud Analysis') {
             steps {
-                echo 'Running SonarCloud analysis...'
+                echo '📊 Running SonarCloud analysis...'
                 sh """
                     ./mvnw verify sonar:sonar \
                     -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
@@ -61,40 +57,32 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
-            when {
-                expression {
-                    return sh(script: 'command -v docker', returnStatus: true) == 0
-                }
-            }
+        stage('Archive Artifacts') {
             steps {
-                echo 'Building Docker image...'
-                script {
-                    sh "docker build -t demo-devops:${BUILD_NUMBER} ."
-                    sh "docker tag demo-devops:${BUILD_NUMBER} demo-devops:latest"
-                }
+                echo '📁 Archiving artifacts...'
+                archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
-                sh 'echo "Application ready for deployment"'
+                echo '🚀 Application ready for deployment...'
+                sh 'echo "JAR file created: $(ls -lh target/*.jar)"'
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline completed'
+            echo '✅ Pipeline completed'
         }
         success {
-            echo 'Pipeline succeeded!'
-            echo 'Archiving artifacts...'
-            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+            echo '✅ Pipeline succeeded!'
+            echo '📊 Check SonarCloud: https://sonarcloud.io/dashboard?id=seifeddineachouri_demo-devops'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed!'
+            echo 'Check the console output for details.'
         }
     }
 }
